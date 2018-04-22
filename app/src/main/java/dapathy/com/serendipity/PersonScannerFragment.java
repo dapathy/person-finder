@@ -3,6 +3,7 @@ package dapathy.com.serendipity;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -70,7 +71,8 @@ public class PersonScannerFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		BluetoothManager manager = (BluetoothManager)this.getContext().getSystemService(Context.BLUETOOTH_SERVICE);//BluetoothAdapter.getDefaultAdapter();
+		mBluetoothAdapter = manager.getAdapter();
 
 		if (getArguments() != null) {
 			mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
@@ -175,7 +177,9 @@ public class PersonScannerFragment extends Fragment {
 
 	private void scanForDevices() {
 		ensureDiscoverable();
-		mBluetoothAdapter.startDiscovery();
+		if (!mBluetoothAdapter.isDiscovering()) {
+			mBluetoothAdapter.startDiscovery();
+		}
 	}
 
 	private void ensureDiscoverable() {
@@ -192,6 +196,8 @@ public class PersonScannerFragment extends Fragment {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+				Log.d(TAG, "device found");
+
 				// Discovery has found a device. Get the BluetoothDevice
 				// object and its info from the Intent.
 				BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
